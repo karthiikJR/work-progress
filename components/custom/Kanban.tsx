@@ -33,28 +33,28 @@ const Board = () => {
 			<Column
 				title="Backlog"
 				column="backlog"
-				headingColor="text-neutral-500"
+				headingColor="text-neutral-500 text-neutral-500"
 				cards={cards}
 				setCards={setCards}
 			/>
 			<Column
 				title="TODO"
 				column="todo"
-				headingColor="text-yellow-200"
+				headingColor="text-yellow-200 text-yellow-600"
 				cards={cards}
 				setCards={setCards}
 			/>
 			<Column
 				title="In progress"
 				column="doing"
-				headingColor="text-blue-200"
+				headingColor="text-blue-200 text-blue-600"
 				cards={cards}
 				setCards={setCards}
 			/>
 			<Column
 				title="Complete"
 				column="done"
-				headingColor="text-emerald-200"
+				headingColor="text-emerald-200 text-emerald-600"
 				cards={cards}
 				setCards={setCards}
 			/>
@@ -186,8 +186,8 @@ const Column = ({
 	return (
 		<div className="w-56 shrink-0">
 			<div className="mb-3 flex items-center justify-between border-b pb-2">
-				<h3 className={`font-medium ${headingColor}`}>{title}</h3>
-				<span className="rounded text-sm text-neutral-400">
+				<h3 className={`font-medium dark:${headingColor}`}>{title}</h3>
+				<span className="rounded text-sm dark:text-neutral-400 text-neutral-600">
 					{filteredCards.length}
 				</span>
 			</div>
@@ -196,7 +196,9 @@ const Column = ({
 				onDragOver={handleDragOver}
 				onDragLeave={handleDragLeave}
 				className={`h-full w-full transition-colors ${
-					active ? "bg-neutral-800/50" : "bg-neutral-800/0"
+					active
+						? "dark:bg-neutral-800/50 bg-neutral-300/50"
+						: "bg-neutral-800/0"
 				}`}
 			>
 				{filteredCards.map((c) => {
@@ -220,7 +222,9 @@ const Card = ({ title, id, column, handleDragStart }: CardProps) => {
 				onDragStart={(e) => handleDragStart(e, { title, id, column })}
 				className="cursor-grab rounded border border-neutral-700 bg-accent p-3 active:cursor-grabbing"
 			>
-				<p className="text-sm text-neutral-100">{title}</p>
+				<p className="text-sm dark:text-neutral-100 text-neutral-800">
+					{title}
+				</p>
 			</motion.div>
 		</>
 	);
@@ -231,7 +235,7 @@ const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
 		<div
 			data-before={beforeId || "-1"}
 			data-column={column}
-			className="my-0.5 h-0.5 w-full bg-violet-400 opacity-0"
+			className="my-0.5 h-0.5 w-full opacity-0"
 		/>
 	);
 };
@@ -267,7 +271,7 @@ const BurnBarrel = ({
 			onDragLeave={handleDragLeave}
 			className={`mt-10 grid h-56 w-56 shrink-0 place-content-center rounded border text-3xl ${
 				active
-					? "border-red-800 bg-red-800/20 text-red-500"
+					? "border-red-800 bg-red-800/20 dark:text-red-500 text-red-800"
 					: "border-neutral-500 bg-neutral-500/20 text-neutral-500"
 			}`}
 		>
@@ -308,18 +312,18 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
 						onChange={(e) => setText(e.target.value)}
 						autoFocus
 						placeholder="Add new task..."
-						className="w-full rounded border border-violet-400 bg-violet-400/20 p-3 text-sm text-neutral-50 placeholder-violet-300 focus:outline-0"
+						className="w-full rounded border p-3 text-sm dark:text-neutral-50 text-neutral-900 placeholder-violet-300 focus:outline-0"
 					/>
 					<div className="mt-1.5 flex items-center justify-end gap-1.5">
 						<button
 							onClick={() => setAdding(false)}
-							className="px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-50"
+							className="px-3 py-1.5 text-xs dark:text-neutral-400 text-neutral-900 transition-colors dark:hover:text-neutral-50"
 						>
 							Close
 						</button>
 						<button
 							type="submit"
-							className="flex items-center gap-1.5 rounded bg-neutral-50 px-3 py-1.5 text-xs text-neutral-950 transition-colors hover:bg-neutral-300"
+							className="flex items-center gap-1.5 rounded dark:bg-neutral-50 px-3 py-1.5 text-xs text-black transition-colors hover:bg-neutral-300 dark:hover:bg-neutral-300"
 						>
 							<span>Add</span>
 							<PlusIcon size={15} />
@@ -330,7 +334,7 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
 				<motion.button
 					layout
 					onClick={() => setAdding(true)}
-					className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-50"
+					className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-900 dark:text-neutral-400 transition-colors dark:hover:text-neutral-50"
 				>
 					<span>Add card</span>
 					<PlusIcon size={15} />
