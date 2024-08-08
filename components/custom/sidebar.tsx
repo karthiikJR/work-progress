@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { cn } from "@/lib/utils";
+import { cn, popMessage } from "@/lib/utils";
 
 import { ModeToggle } from "@/components/custom/DarkMode";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +18,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
+	DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,49 +26,70 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { useAuth } from "@/components/context/AuthContext";
 
+import { addProject, deleteProject, getProjects } from "@/app/api/Project";
 import { PlusIcon } from "lucide-react";
 import Image from "next/image";
 
 function Sidebar() {
 	const { userId } = useAuth();
-	console.log(userId);
 
-	const [links, setLinks] = useState([
-		{
-			id: 1,
-			title: "Dashboard",
-		},
-		{
-			id: 2,
-			title: "Shopping",
-		},
-		{
-			id: 3,
-			title: "Products",
-		},
-		{
-			id: 4,
-			title: "Customers",
-		},
-		{
-			id: 5,
-			title: "Analytics",
-		},
-	]);
+	const [links, setLinks] = useState<{ id: string; title: string }[]>([]);
+
+	const fetchProjects = () => {
+		try {
+			getProjects(userId)
+				.then((data) => {
+					if (data && data.data) {
+						if (data.data.length === 0) {
+							console.log("inside if if");
+							setLinks([]);
+							return;
+						}
+						const projects = data.data.map((project) => {
+							return {
+								id: project.projectId,
+								title: project.projectName,
+							};
+						});
+						setLinks(projects);
+					}
+				})
+				.catch((error) => {
+					throw error;
+				});
+		} catch (error) {
+			popMessage(
+				"error",
+				(error as Error).message || "Error fetching projects"
+			);
+		}
+	};
+
+	useEffect(() => {
+		fetchProjects();
+	}, [userId]);
 
 	const path = usePathname().split("/")[usePathname().split("/").length - 1];
 
 	const [addProjectData, setAddProjectData] = useState({
-		name: "Work progress",
-		description:
-			"A web application designed to help you organize and manage your projects with ease.",
+		name: "",
+		description: "",
 	});
 
-	const addData = () => {
-		setLinks((pv) => [
-			...pv,
-			{ id: links.length + 1, title: addProjectData.name },
-		]);
+	const addProjectDataFunction = async () => {
+		try {
+			const { data, error } = await addProject(userId, {
+				projectName: addProjectData.name,
+				projectDetails: addProjectData.description,
+			});
+			if (error) {
+				throw error;
+			}
+			popMessage("success", "Project added successfully");
+			fetchProjects();
+		} catch (error) {
+			popMessage("error", (error as Error).message || "Error adding project");
+		}
 	};
 
 	return (
@@ -76,7 +98,10 @@ function Sidebar() {
 				<div className="flex h-screen max-h-screen flex-col gap-2">
 					{/* Logo and website name */}
 					<div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-						<Link href="/" className="flex items-center gap-2 font-semibold">
+						<Link
+							href="/projects"
+							className="flex items-center gap-2 font-semibold"
+						>
 							<Image
 								src="/work-progress-logo.svg"
 								alt="Logo"
@@ -95,7 +120,7 @@ function Sidebar() {
 								<DialogTrigger asChild>
 									<Button
 										variant="outline"
-										className="flex items-center justify-start gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary text-muted-foreground"
+										className="flex items-center justify-start gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary text-muted-foreground mb-3"
 									>
 										<span>Add Project</span>
 										<PlusIcon size={15} />
@@ -124,6 +149,7 @@ function Sidebar() {
 												}
 												value={addProjectData.name}
 												className="col-span-3"
+												placeholder="Work progress"
 											/>
 										</div>
 										<div className="grid grid-cols-4 items-center gap-4">
@@ -140,31 +166,42 @@ function Sidebar() {
 												}
 												value={addProjectData.description}
 												className="col-span-3"
+												placeholder="A web application designed to help you organize and manage your projects with ease."
 											/>
 										</div>
 									</div>
 									<DialogFooter>
-										<Button onClick={addData} type="submit">
-											Save
-										</Button>
+										<DialogClose asChild>
+											<Button
+												onClick={async () => await addProjectDataFunction()}
+												type="submit"
+											>
+												Save
+											</Button>
+										</DialogClose>
 									</DialogFooter>
 								</DialogContent>
 							</Dialog>
-
-							{links.map((link) => (
-								<Link
-									key={link.id}
-									href={`/projects/${link.id}`}
-									className={cn(
-										"flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
-										path === link.id.toString()
-											? "bg-muted text-primary"
-											: "text-muted-foreground"
-									)}
-								>
-									{link.title}
-								</Link>
-							))}
+							{links.length === 0 && (
+								<p className="flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary">
+									No projects
+								</p>
+							)}
+							{links.length > 0 &&
+								links.map((link) => (
+									<Link
+										key={link.id}
+										href={`/projects/${link.id}`}
+										className={cn(
+											"group flex items-center justify-between gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
+											path === link.id.toString()
+												? "bg-muted text-primary"
+												: "text-muted-foreground"
+										)}
+									>
+										{link.title}
+									</Link>
+								))}
 						</nav>
 					</div>
 

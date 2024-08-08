@@ -6,8 +6,8 @@ import Heading from "@/components/custom/Heading";
 
 function page() {
 	return (
-		<section className="mx-auto max-w-7xl px-4 py-12">
-			<Heading heading="Projects" />
+		<section className="mx-auto h-screen max-w-7xl px-4 py-12">
+			<Heading projectId="" heading="Projects" />
 			<div className="mb-4 grid grid-cols-12 gap-4 text-background">
 				<BounceCard className="col-span-12 md:col-span-4">
 					<CardTitle>View Project</CardTitle>

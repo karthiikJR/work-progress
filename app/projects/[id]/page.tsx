@@ -40,12 +40,16 @@ const ProjectPage = () => {
 		},
 	];
 
-	const path = router.split("/")[router.split("/").length - 1];
-	const linkDetails = links.find((link) => link.id.toString() === path);
+	const projectId = router.split("/")[router.split("/").length - 1];
+	const linkDetails = links.find((link) => link.id.toString() === projectId);
 
 	return (
 		<div className="overflow-hidden mx-auto max-w-7xl py-12">
-			<Heading heading={linkDetails?.title || "Projects"} description={linkDetails?.description} />
+			<Heading
+				projectId={projectId}
+				heading={linkDetails?.title || "Projects"}
+				description={linkDetails?.description}
+			/>
 			<Kanban />
 		</div>
 	);

@@ -21,3 +21,9 @@ export type DropIndicatorProps = {
 	beforeId: string | null;
 	column: string;
 };
+
+export type ProjectProps = {
+	projectId: string;
+	projectName: string;
+	projectDetails: string;
+};
