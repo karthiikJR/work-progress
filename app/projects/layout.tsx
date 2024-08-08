@@ -1,4 +1,6 @@
-import Sidebar from "@/components/custom/sidebar";
+import Sidebar from "@/components/custom/Sidebar";
+
+import { AuthProvider, useAuth } from "@/components/context/AuthContext";
 
 export default function RootLayout({
 	children,
@@ -7,8 +9,10 @@ export default function RootLayout({
 }>) {
 	return (
 		<main>
-			<Sidebar />
-			<section className="pl-[200px]">{children}</section>
+			<AuthProvider>
+				<Sidebar />
+				<section className="pl-[200px]">{children}</section>
+			</AuthProvider>
 		</main>
 	);
 }

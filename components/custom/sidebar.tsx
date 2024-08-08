@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,10 +23,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import Image from "next/image";
+import { useAuth } from "@/components/context/AuthContext";
+
 import { PlusIcon } from "lucide-react";
+import Image from "next/image";
 
 function Sidebar() {
+	const { userId } = useAuth();
+	console.log(userId);
+
 	const [links, setLinks] = useState([
 		{
 			id: 1,

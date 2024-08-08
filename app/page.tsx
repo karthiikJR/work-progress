@@ -1,4 +1,4 @@
-import Sidebar from "@/components/custom/sidebar";
+import Sidebar from "@/components/custom/Sidebar";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
