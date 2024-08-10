@@ -4,6 +4,7 @@ import {
 	FormEvent,
 	SetStateAction,
 	useState,
+	useEffect,
 } from "react";
 
 import { motion } from "framer-motion";
@@ -16,18 +17,48 @@ import {
 	DropIndicatorProps,
 } from "@/lib/interface";
 import { FireExtinguisherIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { addCard, deleteCard, getAllCards, moveCard } from "@/app/api/Kanban";
+import { popMessage } from "@/lib/utils";
 
-export const Kanban = () => {
+export const Kanban = ({ projectId }: { projectId: string }) => {
+	const [cards, setCards] = useState<CardType[]>([]);
+	useEffect(() => {
+		const fetchCards = async () => {
+			try {
+				const data = await getAllCards(projectId);
+				if (data && data.data) {
+					const cards = data.data.map((card) => {
+						return {
+							title: card.cardContent,
+							id: card.cardId,
+							column: card.column,
+						};
+					});
+					setCards(cards);
+				}
+			} catch (error) {
+				popMessage("error", (error as Error).message || "Error fetching cards");
+			}
+		};
+
+		fetchCards();
+	}, []);
 	return (
 		<div className="h-full w-full bg-background text-neutral-50">
-			<Board />
+			<Board cards={cards} setCards={setCards} projectId={projectId} />
 		</div>
 	);
 };
 
-const Board = () => {
-	const [cards, setCards] = useState(DEFAULT_CARDS);
-
+const Board = ({
+	projectId,
+	cards,
+	setCards,
+}: {
+	projectId: string;
+	cards: CardType[];
+	setCards: React.Dispatch<React.SetStateAction<CardType[]>>;
+}) => {
 	return (
 		<div className="flex h-full w-full gap-3 p-12">
 			<Column
@@ -36,6 +67,7 @@ const Board = () => {
 				headingColor="text-neutral-500 text-neutral-500"
 				cards={cards}
 				setCards={setCards}
+				projectId={projectId}
 			/>
 			<Column
 				title="TODO"
@@ -43,6 +75,7 @@ const Board = () => {
 				headingColor="text-yellow-200 text-yellow-600"
 				cards={cards}
 				setCards={setCards}
+				projectId={projectId}
 			/>
 			<Column
 				title="In progress"
@@ -50,6 +83,7 @@ const Board = () => {
 				headingColor="text-blue-200 text-blue-600"
 				cards={cards}
 				setCards={setCards}
+				projectId={projectId}
 			/>
 			<Column
 				title="Complete"
@@ -57,6 +91,7 @@ const Board = () => {
 				headingColor="text-emerald-200 text-emerald-600"
 				cards={cards}
 				setCards={setCards}
+				projectId={projectId}
 			/>
 			<BurnBarrel setCards={setCards} />
 		</div>
@@ -69,6 +104,7 @@ type ColumnProps = {
 	cards: CardType[];
 	column: ColumnType;
 	setCards: Dispatch<SetStateAction<CardType[]>>;
+	projectId: string;
 };
 
 const Column = ({
@@ -77,6 +113,7 @@ const Column = ({
 	cards,
 	column,
 	setCards,
+	projectId,
 }: ColumnProps) => {
 	const [active, setActive] = useState(false);
 
@@ -102,20 +139,25 @@ const Column = ({
 			if (!cardToTransfer) return;
 			cardToTransfer = { ...cardToTransfer, column };
 
-			copy = copy.filter((c) => c.id !== cardId);
+			try {
+				moveCard(cardToTransfer.id, column).then((data) => {
+					if (data.error) throw data.error;
+					copy = copy.filter((c) => c.id !== cardId);
 
-			const moveToBack = before === "-1";
+					const moveToBack = before === "-1";
 
-			if (moveToBack) {
-				copy.push(cardToTransfer);
-			} else {
-				const insertAtIndex = copy.findIndex((el) => el.id === before);
-				if (insertAtIndex === undefined) return;
-
-				copy.splice(insertAtIndex, 0, cardToTransfer);
+					if (moveToBack) {
+						copy.push(cardToTransfer);
+					} else {
+						const insertAtIndex = copy.findIndex((el) => el.id === before);
+						if (insertAtIndex === undefined) return;
+						copy.splice(insertAtIndex, 0, cardToTransfer);
+					}
+					setCards(copy);
+				});
+			} catch (error) {
+				popMessage("error", (error as Error).message || "Error moving card");
 			}
-
-			setCards(copy);
 		}
 	};
 
@@ -205,7 +247,7 @@ const Column = ({
 					return <Card key={c.id} {...c} handleDragStart={handleDragStart} />;
 				})}
 				<DropIndicator beforeId={null} column={column} />
-				<AddCard column={column} setCards={setCards} />
+				<AddCard projectId={projectId} column={column} setCards={setCards} />
 			</div>
 		</div>
 	);
@@ -259,9 +301,16 @@ const BurnBarrel = ({
 	const handleDragEnd = (e: DragEvent) => {
 		const cardId = e.dataTransfer.getData("cardId");
 
-		setCards((pv) => pv.filter((c) => c.id !== cardId));
+		try {
+			deleteCard(cardId).then((error) => {
+				if (error) throw error;
+				setCards((pv) => pv.filter((c) => c.id !== cardId));
 
-		setActive(false);
+				setActive(false);
+			});
+		} catch (error) {
+			popMessage("error", (error as Error).message || "Error deleting card");
+		}
 	};
 
 	return (
@@ -284,7 +333,7 @@ const BurnBarrel = ({
 	);
 };
 
-const AddCard = ({ column, setCards }: AddCardProps) => {
+const AddCard = ({ column, setCards, projectId }: AddCardProps) => {
 	const [text, setText] = useState("");
 	const [adding, setAdding] = useState(false);
 
@@ -293,15 +342,23 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
 
 		if (!text.trim().length) return;
 
-		const newCard = {
-			column,
-			title: text.trim(),
-			id: Math.random().toString(),
-		};
+		try {
+			addCard({ projectId, text: text.trim(), column }).then((data) => {
+				if (data.error) throw data.error;
+				if (data && data.data) {
+					const newCard = {
+						title: data.data[0].cardContent,
+						id: data.data[0].cardId,
+						column: data.data[0].column,
+					};
+					setCards((pv) => [...pv, newCard]);
 
-		setCards((pv) => [...pv, newCard]);
-
-		setAdding(false);
+					setAdding(false);
+				}
+			});
+		} catch (error) {
+			popMessage("error", (error as Error).message || "Error adding card");
+		}
 	};
 
 	return (
