@@ -41,7 +41,6 @@ function Sidebar() {
 				if (data.error) throw data.error;
 				if (data && data.data) {
 					if (data.data.length === 0) {
-						console.log("inside if if");
 						setLinks([]);
 						return;
 					}

@@ -8,7 +8,6 @@ export const onSubmitLogin = async (formData: z.infer<typeof loginSchema>) => {
 	// TODO - Implement login logic
 	const supabase = createClient();
 
-	console.log(formData);
 	const data = {
 		email: formData.email,
 		password: formData.password,
@@ -22,8 +21,6 @@ export const onSubmitLogin = async (formData: z.infer<typeof loginSchema>) => {
 		console.error(error);
 		return;
 	}
-
-	console.log(userData);
 };
 
 export const onSubmitRegister = async (
@@ -40,7 +37,7 @@ export const onSubmitLogout = async () => {
 export const onSubmitForgotPassword = async (email: string) => {};
 
 export const onGoogleLogin = async () => {
-	// TODO - Implement Google login logic
+	
 	const supabase = createClient();
 	const { data: googleLogin, error } = await supabase.auth.signInWithOAuth({
 		provider: "google",
@@ -53,6 +50,6 @@ export const onGoogleLogin = async () => {
 		console.error(error);
 		return { link: null };
 	}
-	console.log(googleLogin);
+	
 	return { link: googleLogin.url };
 };

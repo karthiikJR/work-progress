@@ -112,7 +112,6 @@ export function AuthForm() {
 
 	const loginGoogleSubmit = async () => {
 		const { link } = await onGoogleLogin();
-		console.log(link);
 		if (link) {
 			window.location.href = link;
 		}
