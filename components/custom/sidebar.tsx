@@ -37,26 +37,23 @@ function Sidebar() {
 
 	const fetchProjects = () => {
 		try {
-			getProjects(userId)
-				.then((data) => {
-					if (data && data.data) {
-						if (data.data.length === 0) {
-							console.log("inside if if");
-							setLinks([]);
-							return;
-						}
-						const projects = data.data.map((project) => {
-							return {
-								id: project.projectId,
-								title: project.projectName,
-							};
-						});
-						setLinks(projects);
+			getProjects(userId).then((data) => {
+				if (data.error) throw data.error;
+				if (data && data.data) {
+					if (data.data.length === 0) {
+						console.log("inside if if");
+						setLinks([]);
+						return;
 					}
-				})
-				.catch((error) => {
-					throw error;
-				});
+					const projects = data.data.map((project) => {
+						return {
+							id: project.projectId,
+							title: project.projectName,
+						};
+					});
+					setLinks(projects);
+				}
+			});
 		} catch (error) {
 			popMessage(
 				"error",
@@ -78,7 +75,7 @@ function Sidebar() {
 
 	const addProjectDataFunction = async () => {
 		try {
-			const { data, error } = await addProject(userId, {
+			const { error } = await addProject(userId, {
 				projectName: addProjectData.name,
 				projectDetails: addProjectData.description,
 			});
@@ -87,6 +84,7 @@ function Sidebar() {
 			}
 			popMessage("success", "Project added successfully");
 			fetchProjects();
+			setAddProjectData({ description: "", name: "" });
 		} catch (error) {
 			popMessage("error", (error as Error).message || "Error adding project");
 		}
@@ -158,12 +156,12 @@ function Sidebar() {
 											</Label>
 											<Textarea
 												id="description"
-												onChange={(event) =>
+												onChange={(event) => {
 													setAddProjectData({
 														...addProjectData,
 														description: event.target.value,
-													})
-												}
+													});
+												}}
 												value={addProjectData.description}
 												className="col-span-3"
 												placeholder="A web application designed to help you organize and manage your projects with ease."

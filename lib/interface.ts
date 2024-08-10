@@ -15,11 +15,23 @@ export type CardProps = CardType & {
 export type AddCardProps = {
 	column: ColumnType;
 	setCards: Dispatch<SetStateAction<CardType[]>>;
+	projectId: string;
 };
 
 export type DropIndicatorProps = {
 	beforeId: string | null;
 	column: string;
+};
+
+
+
+export type ColumnProps = {
+	title: string;
+	headingColor: string;
+	cards: CardType[];
+	column: ColumnType;
+	setCards: Dispatch<SetStateAction<CardType[]>>;
+	projectId: string;
 };
 
 export type ProjectProps = {
