@@ -45,8 +45,8 @@ function Heading({
 				{projectId !== "" && (
 					<Dialog>
 						<DialogTrigger asChild>
-							<Button variant="destructive" className="p-1 h-fit">
-								<Trash2Icon size={20} />
+							<Button variant="destructive" className="p-2 h-fit">
+								<Trash2Icon size={15} />
 							</Button>
 						</DialogTrigger>
 						<DialogContent className="sm:max-w-[425px]">
@@ -72,7 +72,6 @@ function Heading({
 					</Dialog>
 				)}
 			</div>
-			<p className="w-full text-sm text-muted-foreground">Hello</p>
 			{description && (
 				<p className="w-full text-sm text-muted-foreground">{description}</p>
 			)}
