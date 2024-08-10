@@ -16,8 +16,8 @@ const ProjectPage = () => {
 		projectDetails: string;
 	}>({
 		id: "",
-		projectName: "Projects",
-		projectDetails: "Display all your projects here",
+		projectName: "Project Name",
+		projectDetails: "Description about the project thats being worked on",
 	});
 
 	const projectId = router.split("/")[router.split("/").length - 1];
