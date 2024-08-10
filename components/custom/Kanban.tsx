@@ -3,22 +3,23 @@ import {
 	DragEvent,
 	FormEvent,
 	SetStateAction,
-	useState,
 	useEffect,
+	useState,
 } from "react";
 
 import { motion } from "framer-motion";
 
+import { addCard, deleteCard, getAllCards, moveCard } from "@/app/api/Kanban";
 import {
 	AddCardProps,
 	CardProps,
 	CardType,
-	ColumnType,
+	ColumnProps,
 	DropIndicatorProps,
 } from "@/lib/interface";
-import { FireExtinguisherIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { addCard, deleteCard, getAllCards, moveCard } from "@/app/api/Kanban";
 import { popMessage } from "@/lib/utils";
+
+import { FireExtinguisherIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 export const Kanban = ({ projectId }: { projectId: string }) => {
 	const [cards, setCards] = useState<CardType[]>([]);
@@ -96,15 +97,6 @@ const Board = ({
 			<BurnBarrel setCards={setCards} />
 		</div>
 	);
-};
-
-type ColumnProps = {
-	title: string;
-	headingColor: string;
-	cards: CardType[];
-	column: ColumnType;
-	setCards: Dispatch<SetStateAction<CardType[]>>;
-	projectId: string;
 };
 
 const Column = ({
@@ -400,33 +392,3 @@ const AddCard = ({ column, setCards, projectId }: AddCardProps) => {
 		</>
 	);
 };
-
-const DEFAULT_CARDS: CardType[] = [
-	// BACKLOG
-	{ title: "Look into render bug in dashboard", id: "1", column: "backlog" },
-	{ title: "SOX compliance checklist", id: "2", column: "backlog" },
-	{ title: "[SPIKE] Migrate to Azure", id: "3", column: "backlog" },
-	{ title: "Document Notifications service", id: "4", column: "backlog" },
-	// TODO
-	{
-		title: "Research DB options for new microservice",
-		id: "5",
-		column: "todo",
-	},
-	{ title: "Postmortem for outage", id: "6", column: "todo" },
-	{ title: "Sync with product on Q3 roadmap", id: "7", column: "todo" },
-
-	// DOING
-	{
-		title: "Refactor context providers to use Zustand",
-		id: "8",
-		column: "doing",
-	},
-	{ title: "Add logging to daily CRON", id: "9", column: "doing" },
-	// DONE
-	{
-		title: "Set up DD dashboards for Lambda listener",
-		id: "10",
-		column: "done",
-	},
-];
