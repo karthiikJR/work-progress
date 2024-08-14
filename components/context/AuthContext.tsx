@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			if (sessionData.session) {
 				setUserId(sessionData.session.user.id);
 			} else {
-				popMessage("error", "User not logged in");
+				popMessage("error", "Please login to continue");
 				router.push("/auth");
 			}
 		} catch (error) {
@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			setLoading(true);
 			await onSubmitLogout();
 			popMessage("success", "Logged out successfully");
+			router.push("/");
 		} catch (error) {
 			popMessage("error", (error as Error)?.message || "Failed to logout");
 		} finally {

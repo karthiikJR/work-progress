@@ -1,6 +1,6 @@
 import Sidebar from "@/components/custom/Sidebar";
 
-import { AuthProvider, useAuth } from "@/components/context/AuthContext";
+import { AuthProvider } from "@/components/context/AuthContext";
 
 export default function RootLayout({
 	children,

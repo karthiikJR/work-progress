@@ -32,7 +32,7 @@ function Heading({
 			popMessage("success", "Project deleted successfully");
 			window.location.href = "/projects";
 		} catch (error) {
-			popMessage("error", (error as Error).message || "Error deleting project");
+			popMessage("error",  (error as Error)?.message || "Error deleting project");
 		}
 	};
 

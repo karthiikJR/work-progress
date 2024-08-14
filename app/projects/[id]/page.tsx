@@ -35,10 +35,7 @@ const ProjectPage = () => {
 				}
 			});
 		} catch (error) {
-			postMessage(
-				"error",
-				(error as Error).message || "Error fetching project"
-			);
+			postMessage("error", "Error fetching project");
 		}
 	}, [projectId]);
 
