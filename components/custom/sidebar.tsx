@@ -2,38 +2,57 @@
 
 import { useEffect, useState } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { cn, popMessage } from "@/lib/utils";
+import { PlusIcon } from "lucide-react";
 
 import { ModeToggle } from "@/components/custom/DarkMode";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
+	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-	DialogClose,
 } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
 import { useAuth } from "@/components/context/AuthContext";
 
-import { addProject, deleteProject, getProjects } from "@/app/api/Project";
-import { PlusIcon } from "lucide-react";
-import Image from "next/image";
+import { addProject, getProjects } from "@/app/api/Project";
+
+import { getUserProfile } from "@/utils/supabase/action";
+
+import { UserProfile } from "@/lib/interface";
+import { cn, popMessage } from "@/lib/utils";
 
 function Sidebar() {
-	const { userId } = useAuth();
+	const { userId, logout } = useAuth();
 
 	const [links, setLinks] = useState<{ id: string; title: string }[]>([]);
+	const [userData, setUserData] = useState<UserProfile>({
+		id: "",
+		email: "",
+		displayName: "",
+	});
+	const [addProjectData, setAddProjectData] = useState({
+		name: "",
+		description: "",
+	});
 
 	const fetchProjects = () => {
 		try {
@@ -56,21 +75,35 @@ function Sidebar() {
 		} catch (error) {
 			popMessage(
 				"error",
-				(error as Error).message || "Error fetching projects"
+				(error as Error)?.message || "Error fetching projects"
 			);
+		}
+	};
+
+	const getUserData = async () => {
+		try {
+			const { data, error } = await getUserProfile();
+			if (error) {
+				throw error;
+			}
+			if (data && data.user)
+				setUserData({
+					id: data.user.id || "",
+					email: data.user.email || "",
+					displayName: data.user.user_metadata.name,
+					avatarUrl: data.user.user_metadata.avatar_url,
+				});
+		} catch (error) {
+			console.log(error);
 		}
 	};
 
 	useEffect(() => {
 		fetchProjects();
+		getUserData();
 	}, [userId]);
 
 	const path = usePathname().split("/")[usePathname().split("/").length - 1];
-
-	const [addProjectData, setAddProjectData] = useState({
-		name: "",
-		description: "",
-	});
 
 	const addProjectDataFunction = async () => {
 		try {
@@ -85,7 +118,7 @@ function Sidebar() {
 			fetchProjects();
 			setAddProjectData({ description: "", name: "" });
 		} catch (error) {
-			popMessage("error", (error as Error).message || "Error adding project");
+			popMessage("error", (error as Error)?.message || "Error adding project");
 		}
 	};
 
@@ -207,10 +240,30 @@ function Sidebar() {
 						<div className="flex items-center justify-between text-sm gap-2">
 							<ModeToggle />
 							<Button variant="link" size="icon">
-								<Avatar className="h-8 w-8">
-									<AvatarImage src="https://github.com/shadcn.png" />
-									<AvatarFallback>CN</AvatarFallback>
-								</Avatar>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Avatar className="h-8 w-8">
+											<AvatarImage src={userData.avatarUrl} />
+											<AvatarFallback>
+												{userData.displayName
+													.split(" ")
+													.slice(0, 2)
+													.map((word) => word[0])
+													.join("")
+													.toUpperCase()}
+											</AvatarFallback>
+										</Avatar>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent side="top" align="center">
+										<DropdownMenuLabel>
+											{userData.displayName}
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem onClick={() => logout()}>
+											Logout
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							</Button>
 						</div>
 					</div>

@@ -38,7 +38,10 @@ export const Kanban = ({ projectId }: { projectId: string }) => {
 					setCards(cards);
 				}
 			} catch (error) {
-				popMessage("error", (error as Error).message || "Error fetching cards");
+				popMessage(
+					"error",
+					(error as Error)?.message || "Error fetching cards"
+				);
 			}
 		};
 
@@ -148,7 +151,7 @@ const Column = ({
 					setCards(copy);
 				});
 			} catch (error) {
-				popMessage("error", (error as Error).message || "Error moving card");
+				popMessage("error", (error as Error)?.message || "Error moving card");
 			}
 		}
 	};
@@ -301,7 +304,7 @@ const BurnBarrel = ({
 				setActive(false);
 			});
 		} catch (error) {
-			popMessage("error", (error as Error).message || "Error deleting card");
+			popMessage("error", (error as Error)?.message || "Error deleting card");
 		}
 	};
 
@@ -349,7 +352,7 @@ const AddCard = ({ column, setCards, projectId }: AddCardProps) => {
 				}
 			});
 		} catch (error) {
-			popMessage("error", (error as Error).message || "Error adding card");
+			popMessage("error", (error as Error)?.message || "Error adding card");
 		}
 	};
 

@@ -39,3 +39,24 @@ export type ProjectProps = {
 	projectName: string;
 	projectDetails: string;
 };
+
+export type UserProfile = {
+	id: string;
+	email: string;
+	avatarUrl?: string;
+	displayName: string;
+};
+
+export interface UserStats {
+	taskStats: {
+		activity: string;
+		value: number;
+		label: string;
+		fill: string;
+	}[];
+	totalProjects: number;
+	completedProjects: number;
+	pendingProjects: number;
+	totalTasks: number;
+	totalBacklog: number;
+}

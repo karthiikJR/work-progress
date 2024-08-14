@@ -1,6 +1,4 @@
-import Sidebar from "@/components/custom/Sidebar";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -24,7 +22,7 @@ export default function Home() {
 						</p>
 						<div className="items-center justify-center gap-x-3 space-y-3 sm:flex sm:space-y-0">
 							<Button variant={"default"} asChild>
-								<Link href="/projects"> Know more -{">"}</Link>
+								<Link href="/auth"> Know more -{">"}</Link>
 							</Button>
 						</div>
 					</div>

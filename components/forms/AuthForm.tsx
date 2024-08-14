@@ -1,13 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 import Image from "next/image";
-import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Dialog,
 	DialogContent,
@@ -20,12 +17,12 @@ import {
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
@@ -34,11 +31,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { loginSchema, registerSchema } from "@/lib/schema";
+import { popMessage } from "@/lib/utils";
+
 import {
-	onSubmitLogin,
-	onSubmitRegister,
 	onGoogleLogin,
 	onSubmitForgotPassword,
+	onSubmitLogin,
+	onSubmitRegister,
 } from "@/utils/supabase/action";
 
 const Google = () => {
@@ -98,22 +97,61 @@ export function AuthForm() {
 		defaultValues: {
 			email: "",
 			password: "",
-			username: "",
+			name: "",
 		},
 	});
 
 	const loginSubmit = async (formData: z.infer<typeof loginSchema>) => {
-		await onSubmitLogin(formData);
+		try {
+			await onSubmitLogin(formData);
+			popMessage("success", "Logged in successfully");
+		} catch (error) {
+			popMessage("error", (error as Error)?.message || "Failed to login");
+		}
 	};
 
 	const registerSubmit = async (formData: z.infer<typeof registerSchema>) => {
-		await onSubmitRegister(formData);
+		try {
+			const { error, regData } = await onSubmitRegister(formData);
+			if (error) {
+				throw error;
+			}
+			loginSubmit(formData);
+			popMessage(
+				"success", "Registered & loggedIn successfully"
+			);
+			registerForm.reset();
+		} catch (error) {
+			popMessage("error", (error as Error)?.message || "Failed to register");
+		}
 	};
 
 	const loginGoogleSubmit = async () => {
 		const { link } = await onGoogleLogin();
 		if (link) {
-			window.location.href = link;
+			const anchor = document.createElement("a") as HTMLAnchorElement;
+			anchor.href = link;
+			anchor.target = "_blank"; // Open in a new tab
+			anchor.rel = "noopener noreferrer"; // Recommended for security and performance
+			anchor.click();
+		}
+	};
+
+	const passwordResetSubmit = async () => {
+		const email = document.getElementById("reset-email") as HTMLInputElement;
+		try {
+			if (email) {
+				await onSubmitForgotPassword(email.value);
+				popMessage("success", "Password reset email sent");
+				email.value = "";
+			} else {
+				throw new Error("Please enter an email address");
+			}
+		} catch (error) {
+			popMessage(
+				"error",
+				(error as Error)?.message || "Failed to reset password"
+			);
 		}
 	};
 
@@ -143,12 +181,12 @@ export function AuthForm() {
 						>
 							<FormField
 								control={registerForm.control}
-								name="username"
+								name="name"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Username</FormLabel>
+										<FormLabel>Name</FormLabel>
 										<FormControl>
-											<Input placeholder="johndoe" {...field} />
+											<Input placeholder="John Doe" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -192,6 +230,40 @@ export function AuthForm() {
 		);
 	}
 
+	function ForgotPasswordDialog() {
+		return (
+			<Dialog>
+				<DialogTrigger asChild>
+					<Button
+						type="button"
+						variant={"link"}
+						className="ml-auto inline-block text-sm underline p-0"
+					>
+						Forgot your password?
+					</Button>
+				</DialogTrigger>
+				<DialogContent className="sm:max-w-[425px]">
+					<DialogHeader>
+						<DialogTitle>Enter your email</DialogTitle>
+						<DialogDescription>
+							Please enter your email address to reset your password.
+						</DialogDescription>
+					</DialogHeader>
+					<Input
+						id="reset-email"
+						type="email"
+						placeholder="johndoe@example.com"
+					/>
+					<DialogFooter>
+						<Button onClick={passwordResetSubmit} className="w-full">
+							Send
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		);
+	}
+
 	return (
 		<div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
 			<div className="flex items-center justify-center py-12">
@@ -227,12 +299,7 @@ export function AuthForm() {
 									<FormItem>
 										<FormLabel className="flex items-center">
 											Password
-											<Link
-												href="#"
-												className="ml-auto inline-block text-sm underline"
-											>
-												Forgot your password?
-											</Link>
+											<ForgotPasswordDialog />
 										</FormLabel>
 										<FormControl>
 											<div className="relative">
