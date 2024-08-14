@@ -7,5 +7,5 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = loginSchema.extend({
-	username: z.string().min(1, { message: "Please enter a username" }),
+	name: z.string().min(1, { message: "Please enter a Name" }),
 });

@@ -4,8 +4,9 @@ import { loginSchema, registerSchema } from "@/lib/schema";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
 
+import { redirect } from "next/navigation";
+
 export const onSubmitLogin = async (formData: z.infer<typeof loginSchema>) => {
-	// TODO - Implement login logic
 	const supabase = createClient();
 
 	const data = {
@@ -13,36 +14,60 @@ export const onSubmitLogin = async (formData: z.infer<typeof loginSchema>) => {
 		password: formData.password,
 	};
 
-	const { data: userData, error } = await supabase.auth.signInWithPassword(
-		data
-	);
+	const { error } = await supabase.auth.signInWithPassword(data);
 
 	if (error) {
 		console.error(error);
-		return;
+		throw new Error(error.message);
 	}
+
+	redirect("/projects");
 };
 
 export const onSubmitRegister = async (
 	data: z.infer<typeof registerSchema>
 ) => {
-	// TODO - Implement register logic
-	console.log(data);
+	const supabase = createClient();
+
+	const { data: regData, error } = await supabase.auth.admin.createUser({
+		email: data.email,
+		password: data.password,
+		email_confirm: true,
+		user_metadata: {
+			name: data.name,
+		},
+	});
+
+	return { regData, error };
 };
 
 export const onSubmitLogout = async () => {
-	// TODO - Implement logout logic
+	const supabase = createClient();
+
+	const { error } = await supabase.auth.signOut();
+
+	if (error) {
+		console.error("Error signing out", error);
+		throw new Error("Error signing out");
+	} else {
+		redirect("/");
+	}
 };
 
-export const onSubmitForgotPassword = async (email: string) => {};
+export const onSubmitForgotPassword = async (email: string) => {
+	const supabase = createClient();
+
+	const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+	return { error };
+};
 
 export const onGoogleLogin = async () => {
-	
 	const supabase = createClient();
 	const { data: googleLogin, error } = await supabase.auth.signInWithOAuth({
 		provider: "google",
 		options: {
-			redirectTo: "http://localhost:3000/projects",
+			redirectTo: `${process.env.NEXT_PUBLIC_REDIRECT_URL}/projects`,
 		},
 	});
 
@@ -50,6 +75,13 @@ export const onGoogleLogin = async () => {
 		console.error(error);
 		return { link: null };
 	}
-	
 	return { link: googleLogin.url };
+};
+
+export const getUserProfile = async () => {
+	const supabase = createClient();
+
+	const { data, error } = await supabase.auth.getUser();
+
+	return { data, error };
 };
