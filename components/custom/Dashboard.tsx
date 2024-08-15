@@ -188,7 +188,7 @@ export default function Dashboard() {
 				<CardFooter>
 					<Progress
 						value={(userStats.totalBacklog / userStats.totalTasks) * 100}
-						aria-label="25% increase"
+						aria-label={`Total Backlog: ${userStats.totalBacklog}`}
 					/>
 				</CardFooter>
 			</Card>
